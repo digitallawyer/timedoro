@@ -79,6 +79,11 @@ class TimedoroApp {
         // Progress ring
         this.elements.progressRing = document.querySelector('.progress-ring-progress');
 
+        // Help elements
+        this.elements.helpPanel = document.getElementById('helpPanel');
+        this.elements.helpToggle = document.getElementById('helpToggle');
+        this.elements.closeHelp = document.getElementById('closeHelp');
+
         // Settings elements
         this.elements.settingsPanel = document.getElementById('settingsPanel');
         this.elements.settingsToggle = document.getElementById('settingsToggle');
@@ -127,10 +132,14 @@ class TimedoroApp {
         this.elements.resetBtn.addEventListener('click', () => this.resetTimer());
         this.elements.skipBtn.addEventListener('click', () => this.skipSession());
 
+        // Help panel
+        this.elements.helpToggle.addEventListener('click', () => this.toggleHelp());
+        this.elements.closeHelp.addEventListener('click', () => this.closeHelp());
+
         // Settings panel
         this.elements.settingsToggle.addEventListener('click', () => this.toggleSettings());
         this.elements.closeSettings.addEventListener('click', () => this.closeSettings());
-        this.elements.overlay.addEventListener('click', () => this.closeSettings());
+        this.elements.overlay.addEventListener('click', () => this.closePanels());
 
         // Theme controls
         this.elements.themeToggle.addEventListener('click', () => this.cycleTheme());
@@ -476,8 +485,23 @@ class TimedoroApp {
         });
     }
 
+    // Help Management
+    toggleHelp() {
+        this.closeSettings(); // Close settings if open
+        this.elements.helpPanel.classList.add('active');
+        this.elements.overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    closeHelp() {
+        this.elements.helpPanel.classList.remove('active');
+        this.elements.overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
     // Settings Management
     toggleSettings() {
+        this.closeHelp(); // Close help if open
         this.elements.settingsPanel.classList.add('active');
         this.elements.overlay.classList.add('active');
         document.body.style.overflow = 'hidden';
@@ -487,6 +511,11 @@ class TimedoroApp {
         this.elements.settingsPanel.classList.remove('active');
         this.elements.overlay.classList.remove('active');
         document.body.style.overflow = '';
+    }
+
+    closePanels() {
+        this.closeHelp();
+        this.closeSettings();
     }
 
     updateSettings() {
@@ -790,7 +819,7 @@ class TimedoroApp {
                 break;
             case 'Escape':
                 e.preventDefault();
-                this.closeSettings();
+                this.closePanels();
                 break;
         }
     }

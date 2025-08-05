@@ -742,6 +742,137 @@ body {
     50% { transform: scale(1.05); box-shadow: 0 6px 20px var(--shadow-medium); }
 }
 
+/* ===== HELP PANEL ===== */
+.help-panel {
+    position: fixed;
+    top: 0;
+    left: -500px;
+    width: 500px;
+    height: 100vh;
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px);
+    border-right: 1px solid var(--border-primary);
+    z-index: 200;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+}
+
+.help-panel.active {
+    left: 0;
+}
+
+.help-content {
+    padding: 2rem;
+}
+
+.help-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.help-header h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.close-help {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1.25rem;
+}
+
+.help-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.help-section {
+    background: var(--bg-primary);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    border: 1px solid var(--border-primary);
+}
+
+.help-section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 1rem;
+}
+
+.help-section h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.help-section p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+.help-section ul,
+.help-section ol {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-left: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.help-section li {
+    margin-bottom: 0.5rem;
+}
+
+.help-section li strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.shortcuts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.shortcut-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: var(--bg-secondary);
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-primary);
+}
+
+.shortcut-item kbd {
+    padding: 0.25rem 0.5rem;
+    background: var(--accent-tertiary);
+    color: var(--accent-primary);
+    border-radius: 0.25rem;
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 2rem;
+    text-align: center;
+}
+
+.shortcut-item span {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
 /* ===== SETTINGS PANEL ===== */
 .settings-panel {
     position: fixed;
@@ -1214,6 +1345,19 @@ body {
 
     .insight-number {
         font-size: 1.5rem;
+    }
+
+    .help-panel {
+        width: 100%;
+        left: -100%;
+    }
+
+    .help-content {
+        padding: 1.5rem;
+    }
+
+    .shortcuts-grid {
+        grid-template-columns: 1fr;
     }
 
     .settings-panel {

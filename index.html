@@ -32,6 +32,9 @@
         <div class="header-content">
             <h1 class="logo">🍅 Timedoro</h1>
             <div class="header-controls">
+                <button class="btn-icon help-toggle" id="helpToggle" title="Help & Guide">
+                    <span class="help-icon">❓</span>
+                </button>
                 <button class="btn-icon theme-toggle" id="themeToggle" title="Switch Theme">
                     <span class="theme-icon">🌙</span>
                 </button>
@@ -270,6 +273,136 @@
                             <div class="theme-preview theme-preview-cool"></div>
                             <span>Cool</span>
                         </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </aside>
+
+    <!-- Help Panel -->
+    <aside class="help-panel" id="helpPanel">
+        <div class="help-content">
+            <div class="help-header">
+                <h2>Help & Guide</h2>
+                <button class="btn-icon close-help" id="closeHelp">✕</button>
+            </div>
+
+            <div class="help-sections">
+
+                <!-- What is Pomodoro Technique -->
+                <div class="help-section">
+                    <h3 class="help-section-title">🍅 What is the Pomodoro Technique?</h3>
+                    <p>The Pomodoro Technique is a time management method developed by Francesco Cirillo in the late 1980s. It uses a timer to break work into focused intervals, traditionally 25 minutes in length, separated by short breaks.</p>
+                    
+                    <h4>Why does it work?</h4>
+                    <ul>
+                        <li><strong>Improved Focus:</strong> Short, focused sessions help maintain concentration</li>
+                        <li><strong>Reduced Mental Fatigue:</strong> Regular breaks prevent burnout</li>
+                        <li><strong>Better Time Awareness:</strong> Track how long tasks actually take</li>
+                        <li><strong>Increased Productivity:</strong> Urgency of time limit boosts efficiency</li>
+                    </ul>
+                </div>
+
+                <!-- How to use this app -->
+                <div class="help-section">
+                    <h3 class="help-section-title">🚀 How to Use Timedoro</h3>
+                    
+                    <h4>Getting Started:</h4>
+                    <ol>
+                        <li><strong>Add Tasks:</strong> Use the task section to list what you want to work on</li>
+                        <li><strong>Set Current Task:</strong> Click the circle (○) next to a task to set it as current</li>
+                        <li><strong>Start Timer:</strong> Click the "Start" button to begin your 25-minute focus session</li>
+                        <li><strong>Take Breaks:</strong> When the timer ends, take the suggested break</li>
+                        <li><strong>Repeat:</strong> Complete your configured number of sessions for a long break</li>
+                    </ol>
+
+                    <h4>Timer Controls:</h4>
+                    <ul>
+                        <li><strong>Play/Pause (Spacebar):</strong> Start or pause the current session</li>
+                        <li><strong>Reset (R):</strong> Reset the current session to full time</li>
+                        <li><strong>Skip (S):</strong> Skip to the next session (focus/break)</li>
+                    </ul>
+                </div>
+
+                <!-- App Features -->
+                <div class="help-section">
+                    <h3 class="help-section-title">✨ Features</h3>
+                    
+                    <h4>Customization:</h4>
+                    <ul>
+                        <li><strong>Timer Durations:</strong> Adjust focus time, short breaks, and long breaks</li>
+                        <li><strong>Session Count:</strong> Change how many sessions until a long break (2-8)</li>
+                        <li><strong>Themes:</strong> Choose from Light, Dark, Warm, or Cool themes</li>
+                        <li><strong>Ambient Sounds:</strong> Add background sounds to help you focus</li>
+                    </ul>
+
+                    <h4>Productivity Tools:</h4>
+                    <ul>
+                        <li><strong>Task Management:</strong> Track your daily tasks and mark them complete</li>
+                        <li><strong>Session Notes:</strong> Add notes during each focus session</li>
+                        <li><strong>Progress Tracking:</strong> View daily and total session statistics</li>
+                        <li><strong>Achievements:</strong> Unlock badges for reaching productivity milestones</li>
+                        <li><strong>Streak Counter:</strong> Track consecutive days of using the technique</li>
+                    </ul>
+                </div>
+
+                <!-- Tips for Success -->
+                <div class="help-section">
+                    <h3 class="help-section-title">💡 Tips for Success</h3>
+                    
+                    <h4>During Focus Sessions:</h4>
+                    <ul>
+                        <li>Close distracting apps and websites</li>
+                        <li>Turn off non-essential notifications</li>
+                        <li>Have a specific task or goal in mind</li>
+                        <li>If you think of something else, write it down for later</li>
+                        <li>Stay committed to the full 25 minutes</li>
+                    </ul>
+
+                    <h4>During Breaks:</h4>
+                    <ul>
+                        <li>Step away from your workspace</li>
+                        <li>Do light physical activity (stretch, walk)</li>
+                        <li>Avoid mentally demanding activities</li>
+                        <li>Stay hydrated and have a healthy snack</li>
+                        <li>Avoid checking emails or social media</li>
+                    </ul>
+
+                    <h4>Building the Habit:</h4>
+                    <ul>
+                        <li>Start with 2-3 pomodoros per day</li>
+                        <li>Use the same workspace consistently</li>
+                        <li>Review your progress weekly</li>
+                        <li>Adjust timing based on what works for you</li>
+                        <li>Celebrate your achievements!</li>
+                    </ul>
+                </div>
+
+                <!-- Keyboard Shortcuts -->
+                <div class="help-section">
+                    <h3 class="help-section-title">⌨️ Keyboard Shortcuts</h3>
+                    <div class="shortcuts-grid">
+                        <div class="shortcut-item">
+                            <kbd>Space</kbd>
+                            <span>Start/Pause Timer</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <kbd>R</kbd>
+                            <span>Reset Timer</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <kbd>S</kbd>
+                            <span>Skip Session</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <kbd>1-4</kbd>
+                            <span>Switch Themes</span>
+                        </div>
+                        <div class="shortcut-item">
+                            <kbd>Esc</kbd>
+                            <span>Close Panels</span>
+                        </div>
                     </div>
                 </div>
 
