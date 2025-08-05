@@ -15,6 +15,7 @@ class TimedoroApp {
             focusTime: 25,
             shortBreak: 5,
             longBreak: 15,
+            sessionsUntilLongBreak: 4,
             ambientSound: 'none',
             soundVolume: 50,
             enableNotifications: true,
@@ -92,6 +93,7 @@ class TimedoroApp {
         this.elements.focusTime = document.getElementById('focusTime');
         this.elements.shortBreak = document.getElementById('shortBreak');
         this.elements.longBreak = document.getElementById('longBreak');
+        this.elements.sessionsUntilLongBreak = document.getElementById('sessionsUntilLongBreak');
         this.elements.ambientSound = document.getElementById('ambientSound');
         this.elements.soundVolume = document.getElementById('soundVolume');
         this.elements.enableNotifications = document.getElementById('enableNotifications');
@@ -142,6 +144,7 @@ class TimedoroApp {
         this.elements.focusTime.addEventListener('change', () => this.updateSettings());
         this.elements.shortBreak.addEventListener('change', () => this.updateSettings());
         this.elements.longBreak.addEventListener('change', () => this.updateSettings());
+        this.elements.sessionsUntilLongBreak.addEventListener('change', () => this.updateSettings());
         this.elements.ambientSound.addEventListener('change', () => this.updateAmbientSound());
         this.elements.soundVolume.addEventListener('input', () => this.updateVolume());
         this.elements.enableNotifications.addEventListener('change', () => this.updateSettings());
@@ -198,7 +201,7 @@ class TimedoroApp {
         this.elements.sessionType.textContent = sessionTypes[this.currentSession];
 
         // Update session count
-        this.elements.sessionCount.textContent = `Session ${this.sessionCount} of 4`;
+        this.elements.sessionCount.textContent = `Session ${this.sessionCount} of ${this.settings.sessionsUntilLongBreak}`;
 
         // Update progress ring
         const progress = 1 - (this.timeRemaining / this.totalTime);
@@ -346,7 +349,7 @@ class TimedoroApp {
 
     nextSession() {
         if (this.currentSession === 'focus') {
-            if (this.sessionCount === 4) {
+            if (this.sessionCount === this.settings.sessionsUntilLongBreak) {
                 this.currentSession = 'longBreak';
                 this.sessionCount = 1;
             } else {
@@ -354,7 +357,7 @@ class TimedoroApp {
             }
         } else {
             this.currentSession = 'focus';
-            if (this.currentSession === 'focus' && this.sessionCount < 4) {
+            if (this.currentSession === 'focus' && this.sessionCount < this.settings.sessionsUntilLongBreak) {
                 this.sessionCount++;
             }
         }
@@ -490,6 +493,7 @@ class TimedoroApp {
         this.settings.focusTime = parseInt(this.elements.focusTime.value);
         this.settings.shortBreak = parseInt(this.elements.shortBreak.value);
         this.settings.longBreak = parseInt(this.elements.longBreak.value);
+        this.settings.sessionsUntilLongBreak = parseInt(this.elements.sessionsUntilLongBreak.value);
         this.settings.enableNotifications = this.elements.enableNotifications.checked;
 
         // Update current session time if not running
@@ -717,7 +721,7 @@ class TimedoroApp {
         const messages = {
             focus: {
                 title: '🎯 Focus Session Complete!',
-                body: `Great work! Time for a ${this.sessionCount === 4 ? 'long' : 'short'} break.`
+                body: `Great work! Time for a ${this.sessionCount === this.settings.sessionsUntilLongBreak ? 'long' : 'short'} break.`
             },
             shortBreak: {
                 title: '☕ Break Time Over!',
@@ -1003,6 +1007,7 @@ class TimedoroApp {
         this.elements.focusTime.value = this.settings.focusTime;
         this.elements.shortBreak.value = this.settings.shortBreak;
         this.elements.longBreak.value = this.settings.longBreak;
+        this.elements.sessionsUntilLongBreak.value = this.settings.sessionsUntilLongBreak;
 
         // Apply sound settings
         this.elements.ambientSound.value = this.settings.ambientSound;
