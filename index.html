@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timedoro - Beautiful Pomodoro Timer</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="description" content="A beautiful, functional Pomodoro timer to boost your productivity">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍅</text></svg>">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Timedoro">
+</head>
+<body class="theme-light">
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <h1 class="logo">🍅 Timedoro</h1>
+            <div class="header-controls">
+                <button class="btn-icon theme-toggle" id="themeToggle" title="Switch Theme">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <button class="btn-icon settings-toggle" id="settingsToggle" title="Settings">
+                    <span class="settings-icon">⚙️</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+
+        <!-- Timer Section -->
+        <section class="timer-section">
+            <div class="timer-container">
+                <!-- Circular Progress Ring -->
+                <div class="timer-circle">
+                    <svg class="progress-ring" width="300" height="300">
+                        <circle
+                            class="progress-ring-background"
+                            cx="150" cy="150" r="140"
+                            fill="transparent"
+                            stroke="currentColor"
+                            stroke-width="8"
+                        />
+                        <circle
+                            class="progress-ring-progress"
+                            cx="150" cy="150" r="140"
+                            fill="transparent"
+                            stroke="currentColor"
+                            stroke-width="8"
+                            stroke-linecap="round"
+                            transform="rotate(-90 150 150)"
+                        />
+                    </svg>
+
+                    <!-- Timer Display -->
+                    <div class="timer-display">
+                        <div class="time-text" id="timeDisplay">25:00</div>
+                        <div class="session-type" id="sessionType">Focus Time</div>
+                        <div class="session-count" id="sessionCount">Session 1 of 4</div>
+                    </div>
+                </div>
+
+                <!-- Control Buttons -->
+                <div class="timer-controls">
+                    <button class="btn-control btn-secondary" id="resetBtn">
+                        <span class="btn-icon">↻</span>
+                        Reset
+                    </button>
+                    <button class="btn-control btn-primary" id="playPauseBtn">
+                        <span class="btn-icon" id="playPauseIcon">▶</span>
+                        <span id="playPauseText">Start</span>
+                    </button>
+                    <button class="btn-control btn-secondary" id="skipBtn">
+                        <span class="btn-icon">⏭</span>
+                        Skip
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Today's Tasks -->
+        <section class="tasks-section" id="tasksSection">
+            <h2 class="section-title">Today's Tasks</h2>
+
+            <!-- Add Task Input -->
+            <div class="task-input-container">
+                <input
+                    type="text"
+                    id="taskInput"
+                    class="task-input"
+                    placeholder="Add a task for today..."
+                    maxlength="100"
+                />
+                <button class="btn-add-task" id="addTaskBtn">
+                    <span class="add-icon">+</span>
+                </button>
+            </div>
+
+            <!-- Task List -->
+            <div class="task-list" id="taskList">
+                <!-- Tasks will be dynamically added here -->
+            </div>
+
+            <!-- Current Task Display -->
+            <div class="current-task" id="currentTaskDisplay" style="display: none;">
+                <div class="current-task-label">Currently working on:</div>
+                <div class="current-task-text" id="currentTaskText"></div>
+
+                <!-- Session Notes for Current Task -->
+                <div class="session-notes">
+                    <label for="sessionNoteInput" class="note-label">Session Notes</label>
+                    <textarea
+                        id="sessionNoteInput"
+                        class="note-input"
+                        placeholder="Additional notes or thoughts about this session..."
+                        rows="2"
+                    ></textarea>
+                </div>
+            </div>
+        </section>
+
+        <!-- Insights Dashboard -->
+        <section class="insights-section" id="insightsSection">
+            <h2 class="section-title">Today's Progress</h2>
+            <div class="insights-grid">
+                <div class="insight-card">
+                    <div class="insight-number" id="todaysSessions">0</div>
+                    <div class="insight-label">Sessions Completed</div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-number" id="todaysTime">0h 0m</div>
+                    <div class="insight-label">Focus Time</div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-number" id="currentStreak">0</div>
+                    <div class="insight-label">Day Streak</div>
+                </div>
+                <div class="insight-card">
+                    <div class="insight-number" id="totalSessions">0</div>
+                    <div class="insight-label">Total Sessions</div>
+                </div>
+            </div>
+
+            <!-- Achievement Badges -->
+            <div class="achievements" id="achievementsContainer">
+                <h3 class="achievements-title">Achievements</h3>
+                <div class="achievement-badges" id="achievementBadges">
+                    <!-- Badges will be dynamically added -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Settings Panel -->
+    <aside class="settings-panel" id="settingsPanel">
+        <div class="settings-content">
+            <div class="settings-header">
+                <h2>Settings</h2>
+                <button class="btn-icon close-settings" id="closeSettings">✕</button>
+            </div>
+
+            <div class="settings-sections">
+
+                <!-- Timer Settings -->
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Timer</h3>
+                    <div class="setting-item">
+                        <label for="focusTime">Focus Time</label>
+                        <div class="time-input-group">
+                            <span class="time-input-wrapper">
+                                <input type="number" id="focusTime" min="1" max="60" value="25">
+                                <span class="time-unit">min</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label for="shortBreak">Short Break</label>
+                        <div class="time-input-group">
+                            <span class="time-input-wrapper">
+                                <input type="number" id="shortBreak" min="1" max="30" value="5">
+                                <span class="time-unit">min</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label for="longBreak">Long Break</label>
+                        <div class="time-input-group">
+                            <span class="time-input-wrapper">
+                                <input type="number" id="longBreak" min="1" max="60" value="15">
+                                <span class="time-unit">min</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sound Settings -->
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Sounds</h3>
+                    <div class="setting-item">
+                        <label for="ambientSound">Ambient Sound</label>
+                        <select id="ambientSound" class="sound-select">
+                            <option value="none">None</option>
+                            <option value="rain">Rain</option>
+                            <option value="thunderstorm">Thunderstorm</option>
+                            <option value="ocean">Ocean Waves</option>
+                            <option value="forest">Forest</option>
+                            <option value="fireplace">Fireplace</option>
+                            <option value="brownnoise">Brown Noise</option>
+                            <option value="ambient">Ambient</option>
+                            <option value="windchimes">Wind Chimes</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="soundVolume">Volume</label>
+                        <input type="range" id="soundVolume" min="0" max="100" value="50" class="volume-slider">
+                        <span class="volume-value">50%</span>
+                    </div>
+                    <div class="setting-item">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="enableNotifications" checked>
+                            <span class="checkmark"></span>
+                            Browser Notifications
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Theme Settings -->
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Appearance</h3>
+                    <div class="theme-options">
+                        <button class="theme-option active" data-theme="light">
+                            <div class="theme-preview theme-preview-light"></div>
+                            <span>Light</span>
+                        </button>
+                        <button class="theme-option" data-theme="dark">
+                            <div class="theme-preview theme-preview-dark"></div>
+                            <span>Dark</span>
+                        </button>
+                        <button class="theme-option" data-theme="warm">
+                            <div class="theme-preview theme-preview-warm"></div>
+                            <span>Warm</span>
+                        </button>
+                        <button class="theme-option" data-theme="cool">
+                            <div class="theme-preview theme-preview-cool"></div>
+                            <span>Cool</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </aside>
+
+    <!-- Overlay -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Notification Permission Banner -->
+    <div class="notification-banner" id="notificationBanner">
+        <div class="banner-content">
+            <span class="banner-text">Enable notifications to get alerted when sessions end</span>
+            <div class="banner-actions">
+                <button class="btn-banner btn-banner-secondary" id="dismissNotifications">Maybe Later</button>
+                <button class="btn-banner btn-banner-primary" id="enableNotificationsBtn">Enable</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

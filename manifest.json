@@ -1,0 +1,35 @@
+{
+    "name": "Timedoro - Beautiful Pomodoro Timer",
+    "short_name": "Timedoro",
+    "description": "A beautiful, fully-featured Pomodoro timer for productivity enthusiasts",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#3b82f6",
+    "orientation": "portrait-primary",
+    "categories": ["productivity", "lifestyle", "utilities"],
+    "lang": "en",
+    "icons": [
+        {
+            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍅</text></svg>",
+            "sizes": "192x192",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍅</text></svg>",
+            "sizes": "512x512",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ],
+    "screenshots": [
+        {
+            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 600'><rect width='400' height='600' fill='%23ffffff'/><circle cx='200' cy='200' r='80' fill='none' stroke='%233b82f6' stroke-width='8'/><text x='200' y='210' text-anchor='middle' font-size='24' fill='%230f172a'>25:00</text><text x='200' y='240' text-anchor='middle' font-size='16' fill='%233b82f6'>Focus Time</text></svg>",
+            "sizes": "400x600",
+            "type": "image/svg+xml",
+            "form_factor": "narrow",
+            "label": "Timedoro Timer Interface"
+        }
+    ]
+}
