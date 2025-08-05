@@ -125,11 +125,15 @@ body {
     background: var(--bg-primary);
     color: var(--text-primary);
     min-height: 100vh;
+    min-height: 100svh; /* Small viewport height for mobile Safari */
 }
 
 /* ===== HEADER ===== */
 .header {
     padding: 1.5rem 2rem;
+    padding-top: calc(1.5rem + env(safe-area-inset-top));
+    padding-left: calc(2rem + env(safe-area-inset-left));
+    padding-right: calc(2rem + env(safe-area-inset-right));
     background: var(--glass-bg);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-primary);
@@ -191,6 +195,9 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     padding: 2rem;
+    padding-left: calc(2rem + env(safe-area-inset-left));
+    padding-right: calc(2rem + env(safe-area-inset-right));
+    padding-bottom: calc(2rem + env(safe-area-inset-bottom));
     display: flex;
     flex-direction: column;
     gap: 3rem;
@@ -749,6 +756,7 @@ body {
     left: -500px;
     width: 500px;
     height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile Safari */
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
     border-right: 1px solid var(--border-primary);
@@ -763,6 +771,9 @@ body {
 
 .help-content {
     padding: 2rem;
+    padding-left: calc(2rem + env(safe-area-inset-left));
+    padding-right: calc(2rem + env(safe-area-inset-right));
+    padding-bottom: calc(2rem + env(safe-area-inset-bottom));
 }
 
 .help-header {
@@ -880,6 +891,7 @@ body {
     right: -400px;
     width: 400px;
     height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile Safari */
     background: var(--glass-bg);
     backdrop-filter: blur(20px);
     border-left: 1px solid var(--border-primary);
@@ -894,6 +906,9 @@ body {
 
 .settings-content {
     padding: 2rem;
+    padding-left: calc(2rem + env(safe-area-inset-left));
+    padding-right: calc(2rem + env(safe-area-inset-right));
+    padding-bottom: calc(2rem + env(safe-area-inset-bottom));
 }
 
 .settings-header {
@@ -1464,11 +1479,48 @@ textarea:focus-visible {
     }
 }
 
+/* ===== MOBILE SAFARI FIXES ===== */
+@supports (-webkit-touch-callout: none) {
+    /* Mobile Safari specific fixes */
+    body {
+        /* Prevent rubber band scrolling */
+        overscroll-behavior: none;
+        /* Fix touch scrolling */
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Fix viewport height issues on iOS */
+    .help-panel,
+    .settings-panel {
+        height: -webkit-fill-available;
+    }
+}
+
+/* Additional mobile touch improvements */
+@media (hover: none) and (pointer: coarse) {
+    /* Touch device optimizations */
+    .btn-control,
+    .btn-icon,
+    .task-item {
+        /* Larger touch targets on mobile */
+        min-height: 44px;
+    }
+    
+    /* Prevent zoom on inputs */
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+        font-size: 16px;
+    }
+}
+
 /* ===== PRINT STYLES ===== */
 @media print {
     .header-controls,
     .timer-controls,
     .settings-panel,
+    .help-panel,
     .overlay,
     .notification-banner {
         display: none !important;
