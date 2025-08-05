@@ -181,23 +181,11 @@ class TimedoroApp {
     }
 
     setupProgressRing() {
-        // Get the appropriate radius based on viewport size
-        const radius = this.getProgressRingRadius();
+        const radius = 140; // Fixed radius - viewBox handles scaling
         const circumference = 2 * Math.PI * radius;
         this.elements.progressRing.style.strokeDasharray = circumference;
         this.elements.progressRing.style.strokeDashoffset = circumference;
         this.circumference = circumference;
-    }
-
-    getProgressRingRadius() {
-        const width = window.innerWidth;
-        if (width <= 480) {
-            return 93; // Small mobile
-        } else if (width <= 768) {
-            return 115; // Mobile/tablet
-        } else {
-            return 140; // Desktop
-        }
     }
 
     updateProgressRing(progress) {
@@ -859,12 +847,11 @@ class TimedoroApp {
         }
     }
 
-    // Handle window resize to recalculate progress ring
+    // Handle window resize to update display
     handleResize() {
         // Debounce resize events
         clearTimeout(this.resizeTimeout);
         this.resizeTimeout = setTimeout(() => {
-            this.setupProgressRing();
             this.updateDisplay();
         }, 250);
     }
