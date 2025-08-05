@@ -1178,7 +1178,7 @@ body {
 /* ===== NOTIFICATION BANNER ===== */
 .notification-banner {
     position: fixed;
-    top: -100px;
+    top: -200px;
     left: 50%;
     transform: translateX(-50%);
     width: calc(100% - 2rem);
