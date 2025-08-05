@@ -19,7 +19,8 @@ class TimedoroApp {
             ambientSound: 'none',
             soundVolume: 50,
             enableNotifications: true,
-            theme: 'light'
+            theme: 'light',
+            notificationBannerDismissed: false
         };
 
         // Audio contexts
@@ -711,13 +712,15 @@ class TimedoroApp {
     }
 
     showNotificationBanner() {
-        if ('Notification' in window && Notification.permission === 'default') {
+        if ('Notification' in window && Notification.permission === 'default' && !this.settings.notificationBannerDismissed) {
             this.elements.notificationBanner.classList.add('show');
         }
     }
 
     hideNotificationBanner() {
         this.elements.notificationBanner.classList.remove('show');
+        this.settings.notificationBannerDismissed = true;
+        this.saveData();
     }
 
     requestNotificationPermission() {
