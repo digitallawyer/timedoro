@@ -348,6 +348,11 @@ class TimedoroApp {
         // Play completion sound
         this.playNotificationSound();
 
+        // Show confetti for completed focus sessions
+        if (this.currentSession === 'focus') {
+            this.showConfetti();
+        }
+
         // Move to next session
         this.nextSession();
 
@@ -735,6 +740,53 @@ class TimedoroApp {
         } catch (e) {
             console.log('Could not play notification sound');
         }
+    }
+
+        // Confetti celebration using canvas-confetti library
+    showConfetti() {
+        // Check if confetti library is loaded
+        if (typeof confetti === 'undefined') {
+            console.log('Confetti library not loaded');
+            return;
+        }
+
+        const duration = 5 * 1000; // 5 seconds
+        const animationEnd = Date.now() + duration;
+        const defaults = {
+            startVelocity: 30,
+            spread: 360,
+            ticks: 60,
+            zIndex: 9999,
+            colors: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98FB98', '#F0E68C']
+        };
+
+        function randomInRange(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        const interval = setInterval(() => {
+            const timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+                return clearInterval(interval);
+            }
+
+            const particleCount = 50 * (timeLeft / duration);
+
+            // Burst from left side
+            confetti({
+                ...defaults,
+                particleCount,
+                origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+            });
+
+            // Burst from right side
+            confetti({
+                ...defaults,
+                particleCount,
+                origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+            });
+        }, 250);
     }
 
     // Notifications
