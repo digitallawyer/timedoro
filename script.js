@@ -46,6 +46,9 @@ class TimedoroApp {
         this.currentTaskId = null;
         this.hideCompletedTasks = false;
 
+        // Zen mode
+        this.zenMode = false;
+
         // DOM elements
         this.elements = {};
 
@@ -86,6 +89,9 @@ class TimedoroApp {
         this.elements.helpPanel = document.getElementById('helpPanel');
         this.elements.helpToggle = document.getElementById('helpToggle');
         this.elements.closeHelp = document.getElementById('closeHelp');
+
+        // Zen mode elements
+        this.elements.zenToggle = document.getElementById('zenToggle');
 
         // Settings elements
         this.elements.settingsPanel = document.getElementById('settingsPanel');
@@ -141,6 +147,9 @@ class TimedoroApp {
         // Help panel
         this.elements.helpToggle.addEventListener('click', () => this.toggleHelp());
         this.elements.closeHelp.addEventListener('click', () => this.closeHelp());
+
+        // Zen mode
+        this.elements.zenToggle.addEventListener('click', () => this.toggleZenMode());
 
         // Settings panel
         this.elements.settingsToggle.addEventListener('click', () => this.toggleSettings());
@@ -563,6 +572,25 @@ class TimedoroApp {
         this.closeSettings();
     }
 
+    // Zen Mode Management
+    toggleZenMode() {
+        this.zenMode = !this.zenMode;
+        this.updateZenMode();
+        this.saveData();
+    }
+
+    updateZenMode() {
+        if (this.zenMode) {
+            document.body.classList.add('zen-mode');
+            this.elements.zenToggle.querySelector('.zen-icon').textContent = '🔙'; // Exit zen mode icon
+            this.elements.zenToggle.title = 'Exit Zen Mode';
+        } else {
+            document.body.classList.remove('zen-mode');
+            this.elements.zenToggle.querySelector('.zen-icon').textContent = '🧘'; // Enter zen mode icon
+            this.elements.zenToggle.title = 'Toggle Zen Mode';
+        }
+    }
+
     updateSettings() {
         this.settings.focusTime = parseInt(this.elements.focusTime.value);
         this.settings.shortBreak = parseInt(this.elements.shortBreak.value);
@@ -914,6 +942,10 @@ class TimedoroApp {
             case 'Escape':
                 e.preventDefault();
                 this.closePanels();
+                break;
+            case 'KeyZ':
+                e.preventDefault();
+                this.toggleZenMode();
                 break;
         }
     }
@@ -1281,6 +1313,13 @@ class TimedoroApp {
                 this.hideCompletedTasks = taskData.hideCompletedTasks || false;
             }
 
+            // Load UI state
+            const savedUIState = localStorage.getItem('timedoro-ui-state');
+            if (savedUIState) {
+                const uiState = JSON.parse(savedUIState);
+                this.zenMode = uiState.zenMode || false;
+            }
+
             // Load session state
             const savedSessionState = localStorage.getItem('timedoro-session-state');
             let hasRestoredSessionState = false;
@@ -1325,6 +1364,9 @@ class TimedoroApp {
                 currentTaskId: this.currentTaskId,
                 hideCompletedTasks: this.hideCompletedTasks
             }));
+            localStorage.setItem('timedoro-ui-state', JSON.stringify({
+                zenMode: this.zenMode
+            }));
             localStorage.setItem('timedoro-session-state', JSON.stringify({
                 sessionCount: this.sessionCount,
                 currentSession: this.currentSession,
@@ -1362,6 +1404,9 @@ class TimedoroApp {
 
         // Render tasks
         this.renderTasks();
+
+        // Apply zen mode
+        this.updateZenMode();
     }
 }
 
