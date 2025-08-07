@@ -1154,12 +1154,14 @@ class TimedoroApp {
 
             // Load session state
             const savedSessionState = localStorage.getItem('timedoro-session-state');
+            let hasRestoredSessionState = false;
             if (savedSessionState) {
                 const sessionState = JSON.parse(savedSessionState);
                 this.sessionCount = sessionState.sessionCount || 1;
                 this.currentSession = sessionState.currentSession || 'focus';
                 this.timeRemaining = sessionState.timeRemaining || (25 * 60);
                 this.totalTime = sessionState.totalTime || (25 * 60);
+                hasRestoredSessionState = true;
                 // Don't restore isRunning - always start paused
             }
 
@@ -1174,11 +1176,11 @@ class TimedoroApp {
                 // Reset session progress for new day
                 this.sessionCount = 1;
                 this.currentSession = 'focus';
-                this.setSessionTime(); // Reset timer for new day
+                hasRestoredSessionState = false; // Force reset timer for new day
             }
 
             // Apply loaded settings
-            this.applySettings();
+            this.applySettings(hasRestoredSessionState);
 
         } catch (e) {
             console.log('Could not load saved data');
@@ -1206,7 +1208,7 @@ class TimedoroApp {
         }
     }
 
-    applySettings() {
+    applySettings(hasRestoredSessionState = false) {
         // Apply theme
         this.setTheme(this.settings.theme);
 
@@ -1224,8 +1226,10 @@ class TimedoroApp {
         // Update volume display
         document.querySelector('.volume-value').textContent = `${this.settings.soundVolume}%`;
 
-        // Set initial session time
-        this.setSessionTime();
+        // Only set session time if we haven't restored a previous session state
+        if (!hasRestoredSessionState) {
+            this.setSessionTime();
+        }
 
         // Render tasks
         this.renderTasks();
