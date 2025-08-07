@@ -963,7 +963,7 @@ class TimedoroApp {
         taskItem.innerHTML = `
             <div class="task-drag-handle" title="Drag to reorder">⋮⋮</div>
             <div class="task-checkbox ${task.completed ? 'checked' : ''}" data-action="toggle"></div>
-            <div class="task-text">${this.escapeHtml(task.text)}</div>
+            <div class="task-text" contenteditable="true" data-task-id="${task.id}" title="Click to edit">${this.escapeHtml(task.text)}</div>
             <div class="task-actions">
                 <button class="task-action-btn ${task.id === this.currentTaskId ? 'current-btn' : ''}"
                         data-action="current" title="${task.id === this.currentTaskId ? 'Current task' : 'Set as current'}">
@@ -990,6 +990,10 @@ class TimedoroApp {
                     break;
             }
         });
+
+        // Add inline editing event listeners
+        const taskTextElement = taskItem.querySelector('.task-text');
+        this.addInlineEditingListeners(taskTextElement);
 
         // Add drag and drop event listeners
         this.addDragEventListeners(taskItem);
@@ -1120,6 +1124,79 @@ class TimedoroApp {
         });
 
         this.draggedTaskId = null;
+    }
+
+    // Inline editing functionality
+    addInlineEditingListeners(taskTextElement) {
+        let originalText = '';
+
+        // Store original text when editing starts
+        taskTextElement.addEventListener('focus', () => {
+            originalText = taskTextElement.textContent.trim();
+            taskTextElement.classList.add('editing');
+            // Select all text for easy replacement
+            this.selectAllText(taskTextElement);
+        });
+
+        // Handle Enter key to save
+        taskTextElement.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                taskTextElement.blur(); // This will trigger the blur event to save
+            }
+
+            // Handle Escape key to cancel
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                taskTextElement.textContent = originalText;
+                taskTextElement.blur();
+            }
+        });
+
+        // Save changes when focus is lost
+        taskTextElement.addEventListener('blur', () => {
+            taskTextElement.classList.remove('editing');
+            const newText = taskTextElement.textContent.trim();
+
+            if (newText === '') {
+                // Don't allow empty tasks, revert to original
+                taskTextElement.textContent = originalText;
+                return;
+            }
+
+            if (newText !== originalText) {
+                const taskId = taskTextElement.dataset.taskId;
+                this.updateTaskText(taskId, newText);
+            }
+        });
+
+        // Prevent other click events when editing
+        taskTextElement.addEventListener('click', (e) => {
+            if (taskTextElement.classList.contains('editing')) {
+                e.stopPropagation();
+            }
+        });
+    }
+
+    selectAllText(element) {
+        const range = document.createRange();
+        range.selectNodeContents(element);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+
+    updateTaskText(taskId, newText) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task) return;
+
+        task.text = newText;
+        this.saveData();
+
+        // Update current task display if this is the current task
+        if (this.currentTaskId === taskId) {
+            this.updateCurrentTaskDisplay();
+        }
     }
 
     escapeHtml(text) {
