@@ -471,7 +471,7 @@ class TimedoroApp {
         const badge = document.createElement('div');
         badge.className = 'achievement-badge new';
         badge.innerHTML = `<span>${achievement.emoji}</span> ${achievement.name}`;
-        badge.title = achievement.description || `${achievement.name} achievement unlocked!`;
+        badge.setAttribute('data-tooltip', achievement.description || `${achievement.name} achievement unlocked!`);
 
         this.elements.achievementBadges.appendChild(badge);
 
@@ -515,11 +515,11 @@ class TimedoroApp {
             this.sessionData.achievements.forEach(achievementId => {
                 const achievement = achievementDefinitions.find(a => a.id === achievementId);
                 if (achievement) {
-                    const badge = document.createElement('div');
-                    badge.className = 'achievement-badge';
-                    badge.innerHTML = `<span>${achievement.emoji}</span> ${achievement.name}`;
-                    badge.title = achievement.description; // Add tooltip
-                    this.elements.achievementBadges.appendChild(badge);
+                                    const badge = document.createElement('div');
+                badge.className = 'achievement-badge';
+                badge.innerHTML = `<span>${achievement.emoji}</span> ${achievement.name}`;
+                badge.setAttribute('data-tooltip', achievement.description); // Custom tooltip data
+                this.elements.achievementBadges.appendChild(badge);
                 }
             });
         }
@@ -1152,6 +1152,17 @@ class TimedoroApp {
                 this.hideCompletedTasks = taskData.hideCompletedTasks || false;
             }
 
+            // Load session state
+            const savedSessionState = localStorage.getItem('timedoro-session-state');
+            if (savedSessionState) {
+                const sessionState = JSON.parse(savedSessionState);
+                this.sessionCount = sessionState.sessionCount || 1;
+                this.currentSession = sessionState.currentSession || 'focus';
+                this.timeRemaining = sessionState.timeRemaining || (25 * 60);
+                this.totalTime = sessionState.totalTime || (25 * 60);
+                // Don't restore isRunning - always start paused
+            }
+
             // Reset daily data if it's a new day
             const today = new Date().toDateString();
             const lastDate = this.sessionData.lastSessionDate ?
@@ -1160,6 +1171,10 @@ class TimedoroApp {
             if (lastDate && lastDate !== today) {
                 this.sessionData.todaysSessions = 0;
                 this.sessionData.todaysTime = 0;
+                // Reset session progress for new day
+                this.sessionCount = 1;
+                this.currentSession = 'focus';
+                this.setSessionTime(); // Reset timer for new day
             }
 
             // Apply loaded settings
@@ -1178,6 +1193,13 @@ class TimedoroApp {
                 tasks: this.tasks,
                 currentTaskId: this.currentTaskId,
                 hideCompletedTasks: this.hideCompletedTasks
+            }));
+            localStorage.setItem('timedoro-session-state', JSON.stringify({
+                sessionCount: this.sessionCount,
+                currentSession: this.currentSession,
+                timeRemaining: this.timeRemaining,
+                totalTime: this.totalTime,
+                isRunning: false // Don't resume running timer on reload
             }));
         } catch (e) {
             console.log('Could not save data');

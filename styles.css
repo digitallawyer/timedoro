@@ -768,13 +768,7 @@ body {
     padding: 1.5rem;
     text-align: center;
     border: 1px solid var(--border-primary);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.insight-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px var(--shadow-light);
-    border-color: var(--accent-primary);
+    /* Removed hover effects since cards are not clickable */
 }
 
 .insight-number {
@@ -822,10 +816,60 @@ body {
     gap: 0.5rem;
     box-shadow: 0 4px 12px var(--shadow-light);
     animation: achievementPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    cursor: help;
+    position: relative;
 }
 
 .achievement-badge.new {
     animation: achievementPulse 2s infinite;
+}
+
+/* Custom tooltip styling for faster, better UX */
+.achievement-badge[data-tooltip]:hover::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 400;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px var(--shadow-light);
+    border: 1px solid var(--border-primary);
+    z-index: 1000;
+    animation: tooltipFadeIn 0.15s ease-out;
+    pointer-events: none;
+}
+
+.achievement-badge[data-tooltip]:hover::after {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid var(--bg-primary);
+    z-index: 1001;
+    animation: tooltipFadeIn 0.15s ease-out;
+    pointer-events: none;
+}
+
+@keyframes tooltipFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(2px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
 }
 
 @keyframes achievementPop {
