@@ -442,21 +442,47 @@ class TimedoroApp {
             if (!this.sessionData.achievements.includes(achievement.id) && achievement.condition()) {
                 this.sessionData.achievements.push(achievement.id);
                 this.sessionData.newAchievements.push(achievement.id);
-                this.showAchievement(achievement);
+                // Add description for showAchievement
+                const achievementWithDescription = {
+                    ...achievement,
+                    description: this.getAchievementDescription(achievement.id)
+                };
+                this.showAchievement(achievementWithDescription);
             }
         });
     }
 
+    getAchievementDescription(achievementId) {
+        const descriptions = {
+            'first-session': 'Complete your first focus session',
+            'ten-sessions': 'Complete 10 total focus sessions',
+            'fifty-sessions': 'Complete 50 total focus sessions',
+            'hundred-sessions': 'Complete 100 total focus sessions',
+            'week-streak': 'Focus for 7 consecutive days',
+            'month-streak': 'Focus for 30 consecutive days',
+            'daily-goal': 'Complete 8 focus sessions in one day',
+            'focus-time': 'Focus for 2 hours in one day'
+        };
+        return descriptions[achievementId] || 'Achievement unlocked!';
+    }
+
     showAchievement(achievement) {
+        // Create a temporary animated badge that will be replaced by updateAchievements
         const badge = document.createElement('div');
         badge.className = 'achievement-badge new';
         badge.innerHTML = `<span>${achievement.emoji}</span> ${achievement.name}`;
+        badge.title = achievement.description || `${achievement.name} achievement unlocked!`;
 
         this.elements.achievementBadges.appendChild(badge);
 
-        // Remove 'new' class after animation
+        // Remove 'new' class and clean up after animation
         setTimeout(() => {
             badge.classList.remove('new');
+            // Remove from newAchievements tracking after animation completes
+            this.sessionData.newAchievements = this.sessionData.newAchievements.filter(id => id !== achievement.id);
+            this.saveData();
+            // Trigger a re-render to replace with permanent badge
+            this.updateAchievements();
         }, 2000);
 
         // Show notification for achievement
@@ -470,38 +496,33 @@ class TimedoroApp {
     }
 
     updateAchievements() {
-        const achievements = [
-            { id: 'first-session', name: 'Getting Started', emoji: '🚀' },
-            { id: 'ten-sessions', name: 'Building Momentum', emoji: '💪' },
-            { id: 'fifty-sessions', name: 'Focus Master', emoji: '🧠' },
-            { id: 'hundred-sessions', name: 'Century Club', emoji: '💯' },
-            { id: 'week-streak', name: 'Week Warrior', emoji: '🔥' },
-            { id: 'month-streak', name: 'Consistency King', emoji: '👑' },
-            { id: 'daily-goal', name: 'Daily Champion', emoji: '🏆' },
-            { id: 'focus-time', name: 'Time Lord', emoji: '⏰' }
+        const achievementDefinitions = [
+            { id: 'first-session', name: 'Getting Started', emoji: '🚀', description: 'Complete your first focus session' },
+            { id: 'ten-sessions', name: 'Building Momentum', emoji: '💪', description: 'Complete 10 total focus sessions' },
+            { id: 'fifty-sessions', name: 'Focus Master', emoji: '🧠', description: 'Complete 50 total focus sessions' },
+            { id: 'hundred-sessions', name: 'Century Club', emoji: '💯', description: 'Complete 100 total focus sessions' },
+            { id: 'week-streak', name: 'Week Warrior', emoji: '🔥', description: 'Focus for 7 consecutive days' },
+            { id: 'month-streak', name: 'Consistency King', emoji: '👑', description: 'Focus for 30 consecutive days' },
+            { id: 'daily-goal', name: 'Daily Champion', emoji: '🏆', description: 'Complete 8 focus sessions in one day' },
+            { id: 'focus-time', name: 'Time Lord', emoji: '⏰', description: 'Focus for 2 hours in one day' }
         ];
 
-        this.elements.achievementBadges.innerHTML = '';
+        // Only clear and re-render if there are changes
+        const currentBadgeCount = this.elements.achievementBadges.children.length;
+        if (currentBadgeCount !== this.sessionData.achievements.length) {
+            this.elements.achievementBadges.innerHTML = '';
 
-        this.sessionData.achievements.forEach(achievementId => {
-            const achievement = achievements.find(a => a.id === achievementId);
-            if (achievement) {
-                const badge = document.createElement('div');
-                const isNew = this.sessionData.newAchievements.includes(achievementId);
-                badge.className = `achievement-badge ${isNew ? 'new' : ''}`;
-                badge.innerHTML = `<span>${achievement.emoji}</span> ${achievement.name}`;
-                this.elements.achievementBadges.appendChild(badge);
-
-                // Remove 'new' class after animation and clean up tracking
-                if (isNew) {
-                    setTimeout(() => {
-                        badge.classList.remove('new');
-                        this.sessionData.newAchievements = this.sessionData.newAchievements.filter(id => id !== achievementId);
-                        this.saveData();
-                    }, 2000);
+            this.sessionData.achievements.forEach(achievementId => {
+                const achievement = achievementDefinitions.find(a => a.id === achievementId);
+                if (achievement) {
+                    const badge = document.createElement('div');
+                    badge.className = 'achievement-badge';
+                    badge.innerHTML = `<span>${achievement.emoji}</span> ${achievement.name}`;
+                    badge.title = achievement.description; // Add tooltip
+                    this.elements.achievementBadges.appendChild(badge);
                 }
-            }
-        });
+            });
+        }
     }
 
     // Help Management
