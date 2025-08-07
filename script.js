@@ -44,6 +44,7 @@ class TimedoroApp {
         // Task management
         this.tasks = [];
         this.currentTaskId = null;
+        this.hideCompletedTasks = false;
 
         // DOM elements
         this.elements = {};
@@ -121,6 +122,9 @@ class TimedoroApp {
         this.elements.taskList = document.getElementById('taskList');
         this.elements.currentTaskDisplay = document.getElementById('currentTaskDisplay');
         this.elements.currentTaskText = document.getElementById('currentTaskText');
+        this.elements.taskToggleContainer = document.getElementById('taskToggleContainer');
+        this.elements.toggleCompletedTasks = document.getElementById('toggleCompletedTasks');
+        this.elements.toggleCompletedText = document.getElementById('toggleCompletedText');
 
         // Notification banner
         this.elements.notificationBanner = document.getElementById('notificationBanner');
@@ -167,6 +171,7 @@ class TimedoroApp {
                 this.addTask();
             }
         });
+        this.elements.toggleCompletedTasks.addEventListener('click', () => this.toggleCompletedTasks());
 
         // Notification banner
         this.elements.enableNotificationsBtn.addEventListener('click', () => this.requestNotificationPermission());
@@ -896,11 +901,36 @@ class TimedoroApp {
         this.elements.taskList.innerHTML = '';
 
         this.tasks.forEach(task => {
+            // Skip completed tasks if they're hidden
+            if (this.hideCompletedTasks && task.completed) {
+                return;
+            }
+
             const taskElement = this.createTaskElement(task);
             this.elements.taskList.appendChild(taskElement);
         });
 
         this.updateCurrentTaskDisplay();
+        this.updateToggleVisibility();
+    }
+
+    updateToggleVisibility() {
+        const hasCompletedTasks = this.tasks.some(task => task.completed);
+        const hasTasks = this.tasks.length > 0;
+
+        if (hasCompletedTasks && hasTasks) {
+            this.elements.taskToggleContainer.style.display = 'block';
+            this.elements.toggleCompletedText.textContent =
+                this.hideCompletedTasks ? 'Show completed tasks' : 'Hide completed tasks';
+        } else {
+            this.elements.taskToggleContainer.style.display = 'none';
+        }
+    }
+
+    toggleCompletedTasks() {
+        this.hideCompletedTasks = !this.hideCompletedTasks;
+        this.renderTasks();
+        this.saveData();
     }
 
     createTaskElement(task) {
@@ -1098,6 +1128,7 @@ class TimedoroApp {
                 const taskData = JSON.parse(savedTasks);
                 this.tasks = taskData.tasks || [];
                 this.currentTaskId = taskData.currentTaskId || null;
+                this.hideCompletedTasks = taskData.hideCompletedTasks || false;
             }
 
             // Reset daily data if it's a new day
@@ -1124,7 +1155,8 @@ class TimedoroApp {
             localStorage.setItem('timedoro-data', JSON.stringify(this.sessionData));
             localStorage.setItem('timedoro-tasks', JSON.stringify({
                 tasks: this.tasks,
-                currentTaskId: this.currentTaskId
+                currentTaskId: this.currentTaskId,
+                hideCompletedTasks: this.hideCompletedTasks
             }));
         } catch (e) {
             console.log('Could not save data');

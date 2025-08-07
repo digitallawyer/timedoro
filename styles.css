@@ -715,6 +715,30 @@ body {
     border: 2px dashed var(--border-primary);
 }
 
+.task-toggle-container {
+    text-align: center;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-primary);
+}
+
+.task-toggle-link {
+    background: none;
+    border: none;
+    color: var(--text-tertiary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: inherit;
+}
+
+.task-toggle-link:hover {
+    color: var(--text-secondary);
+    background: var(--bg-tertiary);
+}
+
 /* ===== INSIGHTS SECTION ===== */
 .insights-section {
     background: var(--bg-secondary);
