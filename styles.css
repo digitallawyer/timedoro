@@ -506,6 +506,57 @@ body {
     border: 1px solid var(--border-primary);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    position: relative;
+}
+
+.task-drag-handle {
+    color: var(--text-tertiary);
+    font-size: 1rem;
+    cursor: grab;
+    padding: 0.25rem;
+    margin-left: -0.25rem;
+    border-radius: 0.25rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+    opacity: 0;
+    transform: translateX(-8px);
+}
+
+.task-item:hover .task-drag-handle {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.task-drag-handle:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+.task-drag-handle:active {
+    cursor: grabbing;
+}
+
+.task-item.dragging {
+    opacity: 0.5;
+    transform: rotate(2deg);
+    z-index: 1000;
+    box-shadow: 0 8px 32px var(--shadow-heavy);
+}
+
+.task-item.drag-over {
+    border-color: var(--accent-primary);
+    background: var(--accent-tertiary);
+    transform: translateY(-2px);
+}
+
+.task-list.dragging-active .task-item:not(.dragging) {
+    transition: transform 0.2s ease;
+}
+
+.task-item.drag-placeholder {
+    opacity: 0.3;
+    border: 2px dashed var(--accent-primary);
+    background: transparent;
 }
 
 .task-item:hover {
@@ -607,6 +658,7 @@ body {
 
 .current-task {
     padding: 1rem;
+    margin-bottom: 1.5rem;
     background: var(--bg-primary);
     border-radius: 0.75rem;
     border: 2px solid var(--accent-primary);
@@ -1446,6 +1498,11 @@ body {
 
     .task-actions {
         opacity: 1; /* Always show on mobile */
+    }
+
+    .task-drag-handle {
+        opacity: 1; /* Always show drag handle on mobile */
+        transform: translateX(0);
     }
 
     .notification-banner.show {

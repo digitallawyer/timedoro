@@ -37,7 +37,8 @@ class TimedoroApp {
             currentStreak: 0,
             lastSessionDate: null,
             achievements: [],
-            sessionNotes: []
+            sessionNotes: [],
+            newAchievements: [] // Track newly earned achievements for animation
         };
 
         // Task management
@@ -435,6 +436,7 @@ class TimedoroApp {
         achievements.forEach(achievement => {
             if (!this.sessionData.achievements.includes(achievement.id) && achievement.condition()) {
                 this.sessionData.achievements.push(achievement.id);
+                this.sessionData.newAchievements.push(achievement.id);
                 this.showAchievement(achievement);
             }
         });
@@ -480,9 +482,19 @@ class TimedoroApp {
             const achievement = achievements.find(a => a.id === achievementId);
             if (achievement) {
                 const badge = document.createElement('div');
-                badge.className = 'achievement-badge';
+                const isNew = this.sessionData.newAchievements.includes(achievementId);
+                badge.className = `achievement-badge ${isNew ? 'new' : ''}`;
                 badge.innerHTML = `<span>${achievement.emoji}</span> ${achievement.name}`;
                 this.elements.achievementBadges.appendChild(badge);
+
+                // Remove 'new' class after animation and clean up tracking
+                if (isNew) {
+                    setTimeout(() => {
+                        badge.classList.remove('new');
+                        this.sessionData.newAchievements = this.sessionData.newAchievements.filter(id => id !== achievementId);
+                        this.saveData();
+                    }, 2000);
+                }
             }
         });
     }
@@ -895,8 +907,10 @@ class TimedoroApp {
         const taskItem = document.createElement('div');
         taskItem.className = `task-item ${task.completed ? 'completed' : ''} ${task.id === this.currentTaskId ? 'current' : ''}`;
         taskItem.dataset.taskId = task.id;
+        taskItem.draggable = true;
 
         taskItem.innerHTML = `
+            <div class="task-drag-handle" title="Drag to reorder">⋮⋮</div>
             <div class="task-checkbox ${task.completed ? 'checked' : ''}" data-action="toggle"></div>
             <div class="task-text">${this.escapeHtml(task.text)}</div>
             <div class="task-actions">
@@ -925,6 +939,9 @@ class TimedoroApp {
                     break;
             }
         });
+
+        // Add drag and drop event listeners
+        this.addDragEventListeners(taskItem);
 
         return taskItem;
     }
@@ -979,6 +996,79 @@ class TimedoroApp {
     getCurrentTaskText() {
         const currentTask = this.tasks.find(t => t.id === this.currentTaskId);
         return currentTask ? currentTask.text : null;
+    }
+
+    // Drag and Drop functionality
+    addDragEventListeners(taskItem) {
+        taskItem.addEventListener('dragstart', (e) => this.handleDragStart(e));
+        taskItem.addEventListener('dragover', (e) => this.handleDragOver(e));
+        taskItem.addEventListener('dragenter', (e) => this.handleDragEnter(e));
+        taskItem.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+        taskItem.addEventListener('drop', (e) => this.handleDrop(e));
+        taskItem.addEventListener('dragend', (e) => this.handleDragEnd(e));
+    }
+
+    handleDragStart(e) {
+        this.draggedTaskId = e.target.dataset.taskId;
+        e.target.classList.add('dragging');
+        this.elements.taskList.classList.add('dragging-active');
+
+        // Set drag effect
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/html', e.target.outerHTML);
+    }
+
+    handleDragOver(e) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+
+    handleDragEnter(e) {
+        e.preventDefault();
+        if (e.target.classList.contains('task-item') && e.target.dataset.taskId !== this.draggedTaskId) {
+            e.target.classList.add('drag-over');
+        }
+    }
+
+    handleDragLeave(e) {
+        if (e.target.classList.contains('task-item')) {
+            e.target.classList.remove('drag-over');
+        }
+    }
+
+    handleDrop(e) {
+        e.preventDefault();
+
+        const dropTarget = e.target.closest('.task-item');
+        if (!dropTarget || dropTarget.dataset.taskId === this.draggedTaskId) {
+            return;
+        }
+
+        const draggedTaskIndex = this.tasks.findIndex(t => t.id === this.draggedTaskId);
+        const targetTaskIndex = this.tasks.findIndex(t => t.id === dropTarget.dataset.taskId);
+
+        if (draggedTaskIndex !== -1 && targetTaskIndex !== -1) {
+            // Remove dragged task and insert at new position
+            const draggedTask = this.tasks.splice(draggedTaskIndex, 1)[0];
+            this.tasks.splice(targetTaskIndex, 0, draggedTask);
+
+            this.saveData();
+            this.renderTasks();
+        }
+
+        dropTarget.classList.remove('drag-over');
+    }
+
+    handleDragEnd(e) {
+        e.target.classList.remove('dragging');
+        this.elements.taskList.classList.remove('dragging-active');
+
+        // Remove all drag-over classes
+        document.querySelectorAll('.task-item.drag-over').forEach(item => {
+            item.classList.remove('drag-over');
+        });
+
+        this.draggedTaskId = null;
     }
 
     escapeHtml(text) {
