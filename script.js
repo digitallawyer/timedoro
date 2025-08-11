@@ -907,8 +907,8 @@ class TimedoroApp {
 
     // Keyboard Shortcuts
     handleKeyboard(e) {
-        // Don't trigger shortcuts when typing in inputs
-        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        // Don't trigger shortcuts when typing in inputs or contenteditable elements
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.contentEditable === 'true') return;
 
         switch (e.code) {
             case 'Space':
