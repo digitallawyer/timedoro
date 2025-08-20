@@ -117,6 +117,9 @@
                 <button class="btn-icon zen-toggle" id="zenToggle" title="Toggle Zen Mode">
                     <span class="zen-icon">🧘</span>
                 </button>
+                <button class="btn-icon share-toggle" id="shareToggle" title="Share Tasks to Phone">
+                    <span class="share-icon">📱</span>
+                </button>
                 <button class="btn-icon theme-toggle" id="themeToggle" title="Switch Theme">
                     <span class="theme-icon">🌙</span>
                 </button>
@@ -506,6 +509,35 @@
                     </div>
                 </div>
 
+            </div>
+        </div>
+    </aside>
+
+    <!-- Share Panel -->
+    <aside class="share-panel" id="sharePanel">
+        <div class="share-content">
+            <div class="share-header">
+                <h2>Share Tasks to Phone</h2>
+                <button class="btn-icon close-share" id="closeShare">✕</button>
+            </div>
+
+            <div class="share-sections">
+                <div class="share-section">
+                    <h3>Scan QR Code</h3>
+                    <div class="qr-code-container">
+                        <div id="qrCode" class="qr-code"></div>
+                    </div>
+                    <p class="share-instruction">Scan with your phone camera to open tasks on mobile</p>
+                </div>
+
+                <div class="share-section">
+                    <h3>Or Copy Link</h3>
+                    <div class="url-container">
+                        <input type="text" id="shareUrl" class="share-url-input" readonly>
+                        <button class="btn-copy" id="copyUrl" title="Copy URL">📋</button>
+                    </div>
+                    <p class="share-instruction">Copy and paste this link to access your tasks anywhere</p>
+                </div>
             </div>
         </div>
     </aside>

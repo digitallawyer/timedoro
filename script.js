@@ -59,6 +59,7 @@ class TimedoroApp {
     init() {
         this.bindElements();
         this.loadData();
+        this.importFromUrl(); // Check for shared data in URL
         this.setupEventListeners();
         this.updateDisplay();
         this.setupProgressRing();
@@ -92,6 +93,14 @@ class TimedoroApp {
 
         // Zen mode elements
         this.elements.zenToggle = document.getElementById('zenToggle');
+
+        // Share elements
+        this.elements.sharePanel = document.getElementById('sharePanel');
+        this.elements.shareToggle = document.getElementById('shareToggle');
+        this.elements.closeShare = document.getElementById('closeShare');
+        this.elements.qrCode = document.getElementById('qrCode');
+        this.elements.shareUrl = document.getElementById('shareUrl');
+        this.elements.copyUrl = document.getElementById('copyUrl');
 
         // Settings elements
         this.elements.settingsPanel = document.getElementById('settingsPanel');
@@ -150,6 +159,11 @@ class TimedoroApp {
 
         // Zen mode
         this.elements.zenToggle.addEventListener('click', () => this.toggleZenMode());
+
+        // Share panel
+        this.elements.shareToggle.addEventListener('click', () => this.toggleShare());
+        this.elements.closeShare.addEventListener('click', () => this.closeShare());
+        this.elements.copyUrl.addEventListener('click', () => this.copyShareUrl());
 
         // Settings panel
         this.elements.settingsToggle.addEventListener('click', () => this.toggleSettings());
@@ -570,6 +584,7 @@ class TimedoroApp {
     closePanels() {
         this.closeHelp();
         this.closeSettings();
+        this.closeShare();
     }
 
     // Zen Mode Management
@@ -588,6 +603,138 @@ class TimedoroApp {
             document.body.classList.remove('zen-mode');
             this.elements.zenToggle.querySelector('.zen-icon').textContent = '🧘'; // Enter zen mode icon
             this.elements.zenToggle.title = 'Toggle Zen Mode';
+        }
+    }
+
+    // Share Management
+    toggleShare() {
+        this.closePanels(); // Close other panels if open
+        this.generateShareData();
+        this.elements.sharePanel.classList.add('active');
+        this.elements.overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    closeShare() {
+        this.elements.sharePanel.classList.remove('active');
+        this.elements.overlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    generateShareData() {
+        // Collect all app data for sharing
+        const shareData = {
+            tasks: this.tasks,
+            currentTaskId: this.currentTaskId,
+            sessionData: this.sessionData,
+            settings: this.settings,
+            version: '1.0' // For future compatibility
+        };
+
+        // Compress and encode the data
+        const jsonString = JSON.stringify(shareData);
+        const compressed = this.compressData(jsonString);
+        const encoded = btoa(compressed); // Base64 encode
+
+        // Generate the share URL
+        const baseUrl = window.location.origin + window.location.pathname;
+        const shareUrl = `${baseUrl}#data=${encoded}`;
+
+        // Update UI
+        this.elements.shareUrl.value = shareUrl;
+        this.generateQRCode(shareUrl);
+    }
+
+    compressData(str) {
+        // Simple compression - replace common patterns
+        return str
+            .replace(/"id":/g, '"i":')
+            .replace(/"text":/g, '"t":')
+            .replace(/"completed":/g, '"c":')
+            .replace(/"level":/g, '"l":')
+            .replace(/"parentId":/g, '"p":')
+            .replace(/"createdAt":/g, '"a":')
+            .replace(/:true/g, ':"T"')
+            .replace(/:false/g, ':"F"')
+            .replace(/:null/g, ':"N"');
+    }
+
+    decompressData(str) {
+        // Reverse the compression
+        return str
+            .replace(/"i":/g, '"id":')
+            .replace(/"t":/g, '"text":')
+            .replace(/"c":/g, '"completed":')
+            .replace(/"l":/g, '"level":')
+            .replace(/"p":/g, '"parentId":')
+            .replace(/"a":/g, '"createdAt":')
+            .replace(/:"T"/g, ':true')
+            .replace(/:"F"/g, ':false')
+            .replace(/:"N"/g, ':null');
+    }
+
+    generateQRCode(url) {
+        // Clear previous QR code
+        this.elements.qrCode.innerHTML = '';
+
+        // Simple QR code generation using a service
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+
+        const img = document.createElement('img');
+        img.src = qrUrl;
+        img.alt = 'QR Code for sharing tasks';
+        img.style.width = '100%';
+        img.style.height = 'auto';
+
+        this.elements.qrCode.appendChild(img);
+    }
+
+    copyShareUrl() {
+        this.elements.shareUrl.select();
+        this.elements.shareUrl.setSelectionRange(0, 99999); // For mobile devices
+
+        try {
+            document.execCommand('copy');
+            // Show feedback
+            const originalText = this.elements.copyUrl.textContent;
+            this.elements.copyUrl.textContent = '✓';
+            setTimeout(() => {
+                this.elements.copyUrl.textContent = originalText;
+            }, 2000);
+        } catch (err) {
+            console.error('Could not copy URL:', err);
+        }
+    }
+
+    // Import data from URL hash
+    importFromUrl() {
+        const hash = window.location.hash;
+        if (hash.startsWith('#data=')) {
+            try {
+                const encoded = hash.substring(6); // Remove '#data='
+                const compressed = atob(encoded); // Base64 decode
+                const jsonString = this.decompressData(compressed);
+                const importedData = JSON.parse(jsonString);
+
+                // Import the data
+                if (importedData.tasks) this.tasks = importedData.tasks;
+                if (importedData.currentTaskId) this.currentTaskId = importedData.currentTaskId;
+                if (importedData.sessionData) this.sessionData = { ...this.sessionData, ...importedData.sessionData };
+                if (importedData.settings) this.settings = { ...this.settings, ...importedData.settings };
+
+                // Update UI
+                this.renderTasks();
+                this.updateDisplay();
+                this.updateInsights();
+                this.applySettings();
+
+                // Clear the hash to prevent re-importing
+                history.replaceState(null, null, window.location.pathname);
+
+                console.log('Data imported successfully from URL');
+            } catch (error) {
+                console.error('Failed to import data from URL:', error);
+            }
         }
     }
 
