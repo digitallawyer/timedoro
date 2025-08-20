@@ -424,7 +424,7 @@ body {
 .task-input-container {
     display: flex;
     gap: 0.75rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .task-input {
@@ -502,7 +502,7 @@ body {
     position: relative;
     display: flex;
     align-items: stretch; /* Force both children to same height */
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .task-content {
@@ -735,24 +735,7 @@ body {
     color: var(--text-secondary);
 }
 
-/* Add subtle background for subtasks */
-.task-level-1,
-.task-level-2,
-.task-level-3,
-.task-level-4,
-.task-level-5 {
-    background: linear-gradient(90deg, transparent 0%, var(--bg-tertiary) 5%, transparent 100%);
-    border-left: 3px solid transparent;
-}
-
-.task-level-1:hover,
-.task-level-2:hover,
-.task-level-3:hover,
-.task-level-4:hover,
-.task-level-5:hover {
-    border-left-color: var(--accent-primary);
-    background: linear-gradient(90deg, var(--accent-tertiary) 0%, var(--bg-tertiary) 10%, transparent 100%);
-}
+/* Removed subtle background and borders for subtasks to prevent visual clutter */
 
 .current-task {
     padding: 1rem;
