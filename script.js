@@ -987,7 +987,9 @@ class TimedoroApp {
             id: Date.now().toString(),
             text: taskText,
             completed: false,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            level: 0, // Indentation level (0 = top level, 1 = first subtask level, etc.)
+            parentId: null // ID of parent task if this is a subtask
         };
 
         this.tasks.unshift(task); // Add to beginning of array
@@ -1040,14 +1042,19 @@ class TimedoroApp {
 
     createTaskElement(task) {
         const taskItem = document.createElement('div');
-        taskItem.className = `task-item ${task.completed ? 'completed' : ''} ${task.id === this.currentTaskId ? 'current' : ''}`;
+        taskItem.className = `task-item ${task.completed ? 'completed' : ''} ${task.id === this.currentTaskId ? 'current' : ''} task-level-${task.level || 0}`;
         taskItem.dataset.taskId = task.id;
+        taskItem.dataset.taskLevel = task.level || 0;
         taskItem.draggable = true;
+
+        // Calculate indentation
+        const indentation = (task.level || 0) * 20; // 20px per level
+        const indentStyle = indentation > 0 ? `style="margin-left: ${indentation}px;"` : '';
 
         taskItem.innerHTML = `
             <div class="task-drag-handle" title="Drag to reorder">⋮⋮</div>
             <div class="task-checkbox ${task.completed ? 'checked' : ''}" data-action="toggle"></div>
-            <div class="task-text" contenteditable="true" data-task-id="${task.id}" title="Click to edit">${this.escapeHtml(task.text)}</div>
+            <div class="task-text" contenteditable="true" data-task-id="${task.id}" title="Click to edit. Tab/Shift+Tab to indent/outdent. Enter to create new task below." ${indentStyle}>${this.escapeHtml(task.text)}</div>
             <div class="task-actions">
                 <button class="task-action-btn ${task.id === this.currentTaskId ? 'current-btn' : ''}"
                         data-action="current" title="${task.id === this.currentTaskId ? 'Current task' : 'Set as current'}">
@@ -1109,6 +1116,27 @@ class TimedoroApp {
     }
 
     deleteTask(taskId) {
+        const taskToDelete = this.tasks.find(t => t.id === taskId);
+        if (!taskToDelete) return;
+
+        // Find all child tasks and outdent them to parent's level
+        const taskIndex = this.tasks.findIndex(t => t.id === taskId);
+        const taskLevel = taskToDelete.level || 0;
+
+        for (let i = taskIndex + 1; i < this.tasks.length; i++) {
+            const childTask = this.tasks[i];
+
+            // Stop when we reach a task at the same or lower level (not a child)
+            if ((childTask.level || 0) <= taskLevel) break;
+
+            // If this is a direct child (one level deeper), promote it
+            if ((childTask.level || 0) === taskLevel + 1) {
+                childTask.level = taskLevel;
+                childTask.parentId = taskToDelete.parentId;
+            }
+        }
+
+        // Remove the task
         this.tasks = this.tasks.filter(t => t.id !== taskId);
 
         // Clear current task if it was deleted
@@ -1166,12 +1194,16 @@ class TimedoroApp {
         e.preventDefault();
         if (e.target.classList.contains('task-item') && e.target.dataset.taskId !== this.draggedTaskId) {
             e.target.classList.add('drag-over');
+            
+            // Preview the indentation level that will be applied
+            this.previewDragIndentation(e.target);
         }
     }
 
     handleDragLeave(e) {
         if (e.target.classList.contains('task-item')) {
             e.target.classList.remove('drag-over');
+            e.target.removeAttribute('data-drag-message');
         }
     }
 
@@ -1191,23 +1223,137 @@ class TimedoroApp {
             const draggedTask = this.tasks.splice(draggedTaskIndex, 1)[0];
             this.tasks.splice(targetTaskIndex, 0, draggedTask);
 
+            // Adjust indentation based on drop position
+            this.adjustTaskIndentationOnDrop(draggedTask, targetTaskIndex);
+
             this.saveData();
             this.renderTasks();
         }
 
         dropTarget.classList.remove('drag-over');
+        dropTarget.removeAttribute('data-drag-message');
     }
 
     handleDragEnd(e) {
         e.target.classList.remove('dragging');
         this.elements.taskList.classList.remove('dragging-active');
 
-        // Remove all drag-over classes
+        // Remove all drag-over classes and attributes
         document.querySelectorAll('.task-item.drag-over').forEach(item => {
             item.classList.remove('drag-over');
+            item.removeAttribute('data-drag-message');
         });
 
         this.draggedTaskId = null;
+    }
+
+    previewDragIndentation(dropTarget) {
+        // Calculate what the indentation would be if dropped here
+        const targetTaskId = dropTarget.dataset.taskId;
+        const targetTaskIndex = this.tasks.findIndex(t => t.id === targetTaskId);
+        
+        if (targetTaskIndex === -1) return;
+
+        let willBeSubtask = false;
+        
+        // Use the same logic as adjustTaskIndentationOnDrop
+        if (targetTaskIndex > 0) {
+            const previousTask = this.tasks[targetTaskIndex - 1];
+            const previousLevel = previousTask.level || 0;
+
+            // Check if there are any tasks after the previous task that are subtasks
+            let hasSubtasks = false;
+            for (let i = targetTaskIndex; i < this.tasks.length; i++) {
+                const checkTask = this.tasks[i];
+                if (checkTask.id === this.draggedTaskId) continue;
+                
+                if ((checkTask.level || 0) > previousLevel) {
+                    hasSubtasks = true;
+                    break;
+                } else if ((checkTask.level || 0) <= previousLevel) {
+                    break;
+                }
+            }
+
+            willBeSubtask = hasSubtasks;
+        }
+
+        // Update the CSS content dynamically
+        if (willBeSubtask) {
+            dropTarget.setAttribute('data-drag-message', '↳ Will become subtask');
+        } else {
+            dropTarget.setAttribute('data-drag-message', '→ Will move here');
+        }
+    }
+
+    adjustTaskIndentationOnDrop(draggedTask, newIndex) {
+        // Simple and intuitive logic: 
+        // 1. If dropped after a task with subtasks, make it a subtask of that task
+        // 2. Otherwise, make it the same level as the task it's dropped after
+        // 3. If dropped at the beginning, make it level 0
+
+        let newLevel = 0;
+        let newParentId = null;
+
+        // Look at the task before the drop position
+        if (newIndex > 0) {
+            const previousTask = this.tasks[newIndex - 1];
+            const previousLevel = previousTask.level || 0;
+
+            // Check if there are any tasks after the previous task that are subtasks
+            let hasSubtasks = false;
+            for (let i = newIndex; i < this.tasks.length; i++) {
+                const checkTask = this.tasks[i];
+                if (checkTask.id === draggedTask.id) continue; // Skip the dragged task itself
+                
+                if ((checkTask.level || 0) > previousLevel) {
+                    hasSubtasks = true;
+                    break;
+                } else if ((checkTask.level || 0) <= previousLevel) {
+                    break; // Found a task at same or higher level, stop checking
+                }
+            }
+
+            if (hasSubtasks) {
+                // Previous task has subtasks, make this a subtask too
+                newLevel = previousLevel + 1;
+                newParentId = previousTask.id;
+            } else {
+                // No subtasks, make it same level as previous task
+                newLevel = previousLevel;
+                newParentId = previousTask.parentId;
+            }
+        }
+        // If dropped at beginning, level stays 0 and parentId stays null
+
+        // Cap the maximum level
+        newLevel = Math.min(newLevel, 5);
+
+        // Update the task
+        draggedTask.level = newLevel;
+        draggedTask.parentId = newParentId;
+
+        // Also adjust any child tasks of the dragged task
+        this.adjustChildTaskLevels(draggedTask.id, newIndex);
+    }
+
+    adjustChildTaskLevels(parentTaskId, parentIndex) {
+        const parentTask = this.tasks.find(t => t.id === parentTaskId);
+        if (!parentTask) return;
+
+        const parentLevel = parentTask.level || 0;
+
+        // Find all tasks that come after the parent and adjust their levels
+        for (let i = parentIndex + 1; i < this.tasks.length; i++) {
+            const task = this.tasks[i];
+            
+            // Stop when we reach a task that's not a child
+            if ((task.level || 0) <= parentLevel) break;
+
+            // Adjust child task level relative to new parent level
+            const relativeLevel = (task.level || 0) - parentLevel;
+            task.level = Math.min(parentLevel + relativeLevel, 5);
+        }
     }
 
     // Inline editing functionality
@@ -1226,7 +1372,15 @@ class TimedoroApp {
         taskTextElement.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                taskTextElement.blur(); // This will trigger the blur event to save
+                // Save current task first
+                const newText = taskTextElement.textContent.trim();
+                if (newText !== originalText && newText !== '') {
+                    const taskId = taskTextElement.dataset.taskId;
+                    this.updateTaskText(taskId, newText);
+                }
+                taskTextElement.blur(); // Remove editing state
+                // Create new task below current one
+                this.createTaskBelow(taskTextElement.dataset.taskId);
             }
 
             // Handle Escape key to cancel
@@ -1234,6 +1388,17 @@ class TimedoroApp {
                 e.preventDefault();
                 taskTextElement.textContent = originalText;
                 taskTextElement.blur();
+            }
+
+            // Handle Tab key to indent/outdent
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const taskId = taskTextElement.dataset.taskId;
+                if (e.shiftKey) {
+                    this.outdentTask(taskId);
+                } else {
+                    this.indentTask(taskId);
+                }
             }
         });
 
@@ -1243,9 +1408,16 @@ class TimedoroApp {
             const newText = taskTextElement.textContent.trim();
 
             if (newText === '') {
-                // Don't allow empty tasks, revert to original
-                taskTextElement.textContent = originalText;
-                return;
+                // If this was a newly created empty task, delete it
+                if (originalText === '') {
+                    const taskId = taskTextElement.dataset.taskId;
+                    this.deleteTask(taskId);
+                    return;
+                } else {
+                    // Don't allow empty existing tasks, revert to original
+                    taskTextElement.textContent = originalText;
+                    return;
+                }
             }
 
             if (newText !== originalText) {
@@ -1283,6 +1455,126 @@ class TimedoroApp {
         }
     }
 
+    indentTask(taskId) {
+        const taskIndex = this.tasks.findIndex(t => t.id === taskId);
+        if (taskIndex === -1) return;
+
+        const task = this.tasks[taskIndex];
+        const maxLevel = 5; // Maximum nesting level
+
+        // Don't indent if already at max level
+        if ((task.level || 0) >= maxLevel) return;
+
+        // Find potential parent (previous task at same or higher level)
+        let parentTask = null;
+        for (let i = taskIndex - 1; i >= 0; i--) {
+            const prevTask = this.tasks[i];
+            if ((prevTask.level || 0) <= (task.level || 0)) {
+                parentTask = prevTask;
+                break;
+            }
+        }
+
+        // Indent the task
+        task.level = (task.level || 0) + 1;
+        task.parentId = parentTask ? parentTask.id : null;
+
+        this.renderTasks();
+        this.saveData();
+    }
+
+    outdentTask(taskId) {
+        const task = this.tasks.find(t => t.id === taskId);
+        if (!task || (task.level || 0) === 0) return;
+
+        const taskIndex = this.tasks.findIndex(t => t.id === taskId);
+
+        // Reduce level
+        task.level = Math.max(0, (task.level || 0) - 1);
+
+        // Update parent relationship
+        if (task.level === 0) {
+            task.parentId = null;
+        } else {
+            // Find new parent at the new level
+            let newParent = null;
+            for (let i = taskIndex - 1; i >= 0; i--) {
+                const prevTask = this.tasks[i];
+                if ((prevTask.level || 0) < task.level) {
+                    newParent = prevTask;
+                    break;
+                }
+            }
+            task.parentId = newParent ? newParent.id : null;
+        }
+
+        // Also outdent any child tasks that would become orphaned
+        this.outdentChildTasks(taskId, task.level);
+
+        this.renderTasks();
+        this.saveData();
+    }
+
+    outdentChildTasks(parentTaskId, newParentLevel) {
+        const taskIndex = this.tasks.findIndex(t => t.id === parentTaskId);
+        if (taskIndex === -1) return;
+
+        // Find all tasks that come after this task and have a higher level
+        for (let i = taskIndex + 1; i < this.tasks.length; i++) {
+            const childTask = this.tasks[i];
+
+            // Stop when we reach a task at the same or lower level (not a child)
+            if ((childTask.level || 0) <= newParentLevel) break;
+
+            // If this task is too deeply nested compared to its new parent, outdent it
+            if ((childTask.level || 0) > newParentLevel + 1) {
+                childTask.level = newParentLevel + 1;
+                childTask.parentId = parentTaskId;
+            }
+        }
+    }
+
+    createTaskBelow(currentTaskId) {
+        const currentTaskIndex = this.tasks.findIndex(t => t.id === currentTaskId);
+        if (currentTaskIndex === -1) return;
+
+        const currentTask = this.tasks[currentTaskIndex];
+
+        // Create new task with same level and parent as current task
+        const newTask = {
+            id: Date.now().toString(),
+            text: '',
+            completed: false,
+            createdAt: new Date().toISOString(),
+            level: currentTask.level || 0,
+            parentId: currentTask.parentId
+        };
+
+        // Insert the new task right after the current task and all its children
+        let insertIndex = currentTaskIndex + 1;
+
+        // Skip over any child tasks of the current task
+        while (insertIndex < this.tasks.length &&
+               (this.tasks[insertIndex].level || 0) > (currentTask.level || 0)) {
+            insertIndex++;
+        }
+
+        // Insert the new task
+        this.tasks.splice(insertIndex, 0, newTask);
+
+        // Re-render tasks
+        this.renderTasks();
+        this.saveData();
+
+        // Focus on the new task for immediate editing
+        setTimeout(() => {
+            const newTaskElement = document.querySelector(`[data-task-id="${newTask.id}"] .task-text`);
+            if (newTaskElement) {
+                newTaskElement.focus();
+            }
+        }, 50);
+    }
+
     escapeHtml(text) {
         const div = document.createElement('div');
         div.textContent = text;
@@ -1311,6 +1603,16 @@ class TimedoroApp {
                 this.tasks = taskData.tasks || [];
                 this.currentTaskId = taskData.currentTaskId || null;
                 this.hideCompletedTasks = taskData.hideCompletedTasks || false;
+
+                // Migrate existing tasks to add level and parentId properties
+                this.tasks.forEach(task => {
+                    if (task.level === undefined) {
+                        task.level = 0;
+                    }
+                    if (task.parentId === undefined) {
+                        task.parentId = null;
+                    }
+                });
             }
 
             // Load UI state
