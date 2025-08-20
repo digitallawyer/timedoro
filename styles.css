@@ -497,39 +497,62 @@ body {
 }
 
 .task-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding:0.25rem 1rem ;
-    background: var(--bg-primary);
-    border-radius: 0.75rem;
-    border: 1px solid var(--border-primary);
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     position: relative;
+    display: flex;
+    align-items: stretch; /* Force both children to same height */
+    margin-bottom: 0.5rem;
+}
+
+.task-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    flex: 1;
+    position: relative;
+    background: var(--bg-primary);
+    border-radius: 0 0.75rem 0.75rem 0;
+    border: 1px solid var(--border-primary);
+    border-left: none;
+    box-sizing: border-box;
 }
 
 .task-drag-handle {
     color: var(--text-tertiary);
-    font-size: 1rem;
+    font-size: 0.875rem;
     cursor: grab;
-    padding: 0.25rem;
-    margin-left: -0.25rem;
-    border-radius: 0.25rem;
+    padding: 0.5rem 0.5rem;
+    border-radius: 0.75rem 0 0 0.75rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-right: none;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     user-select: none;
-    opacity: 0;
-    transform: translateX(-8px);
+    opacity: 0.7;
+    width: auto;
+    flex-shrink: 0;
+    margin-left: -1px; /* Overlap with task border */
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
 }
 
 .task-item:hover .task-drag-handle {
     opacity: 1;
-    transform: translateX(0);
+    border-color: var(--accent-primary);
 }
 
 .task-drag-handle:hover {
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
+    background: var(--accent-tertiary);
+    color: var(--accent-primary);
+}
+
+/* Hover effect for task content */
+.task-item:hover .task-content {
+    border-color: var(--accent-primary);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
 }
 
 .task-drag-handle:active {
@@ -700,41 +723,7 @@ body {
     position: relative;
 }
 
-/* Add connecting lines for subtasks */
-.task-level-1::before,
-.task-level-2::before,
-.task-level-3::before,
-.task-level-4::before,
-.task-level-5::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: var(--border-primary);
-    opacity: 0.3;
-}
-
-.task-level-1::before {
-    left: 10px;
-}
-
-.task-level-2::before {
-    left: 30px;
-}
-
-.task-level-3::before {
-    left: 50px;
-}
-
-.task-level-4::before {
-    left: 70px;
-}
-
-.task-level-5::before {
-    left: 90px;
-}
+/* Removed connecting lines - subtasks are indicated by checkbox indentation only */
 
 /* Adjust subtask content to account for indentation */
 .task-level-1 .task-text,
@@ -1734,10 +1723,7 @@ body {
         opacity: 1; /* Always show on mobile */
     }
 
-    .task-drag-handle {
-        opacity: 1; /* Always show drag handle on mobile */
-        transform: translateX(0);
-    }
+    /* Drag handle is now always visible, no mobile-specific overrides needed */
 
     .notification-banner.show {
         top: 2rem;

@@ -1047,20 +1047,22 @@ class TimedoroApp {
         taskItem.dataset.taskLevel = task.level || 0;
         taskItem.draggable = true;
 
-        // Calculate indentation
-        const indentation = (task.level || 0) * 20; // 20px per level
-        const indentStyle = indentation > 0 ? `style="margin-left: ${indentation}px;"` : '';
+        // Calculate indentation only for the checkbox
+        const checkboxIndentation = (task.level || 0) * 20; // 20px per level
+        const checkboxStyle = checkboxIndentation > 0 ? `style="margin-left: ${checkboxIndentation}px;"` : '';
 
         taskItem.innerHTML = `
             <div class="task-drag-handle" title="Drag to reorder">⋮⋮</div>
-            <div class="task-checkbox ${task.completed ? 'checked' : ''}" data-action="toggle"></div>
-            <div class="task-text" contenteditable="true" data-task-id="${task.id}" title="Click to edit. Tab/Shift+Tab to indent/outdent. Enter to create new task below." ${indentStyle}>${this.escapeHtml(task.text)}</div>
-            <div class="task-actions">
-                <button class="task-action-btn ${task.id === this.currentTaskId ? 'current-btn' : ''}"
-                        data-action="current" title="${task.id === this.currentTaskId ? 'Current task' : 'Set as current'}">
-                    ${task.id === this.currentTaskId ? '●' : '○'}
-                </button>
-                <button class="task-action-btn" data-action="delete" title="Delete task">×</button>
+            <div class="task-content">
+                <div class="task-checkbox ${task.completed ? 'checked' : ''}" data-action="toggle" ${checkboxStyle}></div>
+                <div class="task-text" contenteditable="true" data-task-id="${task.id}" title="Click to edit. Tab/Shift+Tab to indent/outdent. Enter to create new task below.">${this.escapeHtml(task.text)}</div>
+                <div class="task-actions">
+                    <button class="task-action-btn ${task.id === this.currentTaskId ? 'current-btn' : ''}"
+                            data-action="current" title="${task.id === this.currentTaskId ? 'Current task' : 'Set as current'}">
+                        ${task.id === this.currentTaskId ? '●' : '○'}
+                    </button>
+                    <button class="task-action-btn" data-action="delete" title="Delete task">×</button>
+                </div>
             </div>
         `;
 
@@ -1194,7 +1196,7 @@ class TimedoroApp {
         e.preventDefault();
         if (e.target.classList.contains('task-item') && e.target.dataset.taskId !== this.draggedTaskId) {
             e.target.classList.add('drag-over');
-            
+
             // Preview the indentation level that will be applied
             this.previewDragIndentation(e.target);
         }
@@ -1251,11 +1253,11 @@ class TimedoroApp {
         // Calculate what the indentation would be if dropped here
         const targetTaskId = dropTarget.dataset.taskId;
         const targetTaskIndex = this.tasks.findIndex(t => t.id === targetTaskId);
-        
+
         if (targetTaskIndex === -1) return;
 
         let willBeSubtask = false;
-        
+
         // Use the same logic as adjustTaskIndentationOnDrop
         if (targetTaskIndex > 0) {
             const previousTask = this.tasks[targetTaskIndex - 1];
@@ -1266,7 +1268,7 @@ class TimedoroApp {
             for (let i = targetTaskIndex; i < this.tasks.length; i++) {
                 const checkTask = this.tasks[i];
                 if (checkTask.id === this.draggedTaskId) continue;
-                
+
                 if ((checkTask.level || 0) > previousLevel) {
                     hasSubtasks = true;
                     break;
@@ -1287,7 +1289,7 @@ class TimedoroApp {
     }
 
     adjustTaskIndentationOnDrop(draggedTask, newIndex) {
-        // Simple and intuitive logic: 
+        // Simple and intuitive logic:
         // 1. If dropped after a task with subtasks, make it a subtask of that task
         // 2. Otherwise, make it the same level as the task it's dropped after
         // 3. If dropped at the beginning, make it level 0
@@ -1305,7 +1307,7 @@ class TimedoroApp {
             for (let i = newIndex; i < this.tasks.length; i++) {
                 const checkTask = this.tasks[i];
                 if (checkTask.id === draggedTask.id) continue; // Skip the dragged task itself
-                
+
                 if ((checkTask.level || 0) > previousLevel) {
                     hasSubtasks = true;
                     break;
@@ -1346,7 +1348,7 @@ class TimedoroApp {
         // Find all tasks that come after the parent and adjust their levels
         for (let i = parentIndex + 1; i < this.tasks.length; i++) {
             const task = this.tasks[i];
-            
+
             // Stop when we reach a task that's not a child
             if ((task.level || 0) <= parentLevel) break;
 
