@@ -677,16 +677,47 @@ class TimedoroApp {
         // Clear previous QR code
         this.elements.qrCode.innerHTML = '';
 
-        // Simple QR code generation using a service
-        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+        // Try multiple QR code services with fallback
+        const qrServices = [
+            `https://qr-server.com/api/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`,
+            `https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=${encodeURIComponent(url)}`,
+            `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`
+        ];
 
         const img = document.createElement('img');
-        img.src = qrUrl;
         img.alt = 'QR Code for sharing tasks';
         img.style.width = '100%';
         img.style.height = 'auto';
 
+        let currentServiceIndex = 0;
+
+        const tryNextService = () => {
+            if (currentServiceIndex >= qrServices.length) {
+                // All services failed, show manual copy message
+                this.elements.qrCode.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                        <p>QR code generation unavailable</p>
+                        <p style="font-size: 0.8rem;">Please copy the URL manually</p>
+                    </div>
+                `;
+                return;
+            }
+
+            img.src = qrServices[currentServiceIndex];
+            currentServiceIndex++;
+        };
+
+        img.onerror = () => {
+            console.warn(`QR service failed: ${img.src}`);
+            tryNextService();
+        };
+
+        img.onload = () => {
+            console.log(`QR code generated successfully with service: ${img.src}`);
+        };
+
         this.elements.qrCode.appendChild(img);
+        tryNextService();
     }
 
     copyShareUrl() {
